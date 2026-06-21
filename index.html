@@ -143,6 +143,15 @@ color:#1976d2;
 </style>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
+
+<link
+href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css"
+rel="stylesheet">
+
+<script
+src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js">
+</script>
+  
 </head>
 
 <body>
@@ -211,7 +220,7 @@ SIMPAN
 </div>
 
 <script>
-const API="https://script.google.com/macros/s/AKfycbz_0XEsKus5AslNzJyx8bNebdGhwWFT6hJAM6WZYQN--msdJ8NF2gWCnuzdfioS6HUq/exec";
+const API="https://script.google.com/macros/s/AKfycbxpDBK-_y2heN6b8EkXyiwg9cqkXB-hWYU-KXwDjQmlaI2W7cB-v0baDYjADQpkxrc5/exec";
 
 let MASTER=[];
 let produk=null;
@@ -219,26 +228,69 @@ let scanner=null;
 const audioSukses=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 const audioError=new Audio("https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg");
 let MASTER_MAP={};
+let petugasSelect=null;
 
 window.onload=async()=>{ await loadMaster(); };
 
-function updatePetugas(){
-const tim=document.getElementById("tim").value;
-const petugas=document.getElementById("petugas");
-petugas.innerHTML='<option value="">Pilih Petugas</option>';
-let daftar=[];
+async function updatePetugas(){
 
-if(tim=="Surtok"){
-daftar=["Asep","Dudi","Riki","Yanto","Ridwan","Janwar","Ozi","Wildan"];
-}
+const tim=
+document.getElementById("tim").value;
 
-if(tim=="Audit"){
-daftar=["Agung","Rilo","Maul","Asep","Rahman","Wildan","Ozi","Riki"];
-}
+const petugas=
+document.getElementById("petugas");
 
-daftar.forEach(nama=>{
-petugas.innerHTML+=`<option>${nama}</option>`;
+petugas.innerHTML=
+'<option value="">Memuat...</option>';
+
+try{
+
+const res=
+await fetch(
+API+
+"?action=petugas&tim="+
+encodeURIComponent(tim)
+);
+
+const data=
+await res.json();
+
+petugas.innerHTML=
+'<option value="">Pilih Petugas</option>';
+
+(data.data||[]).forEach(nama=>{
+
+petugas.innerHTML+=
+`<option value="${nama}">
+${nama}
+</option>`;
+
 });
+
+
+if(petugasSelect){
+
+petugasSelect.destroy();
+
+}
+
+
+petugasSelect=
+new TomSelect(
+"#petugas",
+{
+create:false,
+sortField:"text"
+}
+);
+
+}
+catch(err){
+
+console.log(err);
+
+}
+
 }
 
 async function loadMaster(){
