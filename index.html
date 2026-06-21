@@ -1,54 +1,450 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SO Suryatokoku</title>
 
 <style>
-/* isi style.css disini */
 body{
-    font-family:Arial;
-    background:#f3f3f3;
-    margin:0;
-    padding:15px;
+font-family:Arial;
+background:#f3f3f3;
+margin:0;
+padding:15px;
 }
 
 .container{
-    max-width:500px;
-    margin:auto;
-    background:white;
-    padding:20px;
-    border-radius:15px;
-    box-shadow:0 2px 10px rgba(0,0,0,.1);
+max-width:500px;
+margin:auto;
+background:white;
+padding:20px;
+border-radius:15px;
+box-shadow:0 2px 10px rgba(0,0,0,.1);
 }
 
-/* lanjutkan semua isi style.css */
+input,select,button{
+width:100%;
+padding:14px;
+margin-top:10px;
+border-radius:10px;
+border:1px solid #ddd;
+box-sizing:border-box;
+font-size:16px;
+}
+
+button{
+border:none;
+cursor:pointer;
+}
+
+#produk{
+margin-top:15px;
+padding:15px;
+background:#f5f5f5;
+border-radius:10px;
+font-weight:bold;
+min-height:50px;
+}
+
+#reader{
+margin-top:15px;
+}
+
+#masterStatus{
+margin-top:10px;
+margin-bottom:10px;
+padding:12px;
+border-radius:10px;
+background:#f5f5f5;
+font-size:14px;
+}
+
+button:disabled,input:disabled{
+background:#ddd;
+color:#777;
+cursor:not-allowed;
+}
+
+#reader{
+margin-top:10px;
+overflow:hidden;
+border-radius:10px;
+}
+
+#reader video{
+border-radius:10px;
+width:100%;
+}
+
+.popup{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.5);
+z-index:999;
+justify-content:center;
+align-items:center;
+}
+
+.popup-box{
+background:white;
+padding:20px;
+width:280px;
+border-radius:15px;
+text-align:center;
+box-shadow:0 5px 20px rgba(0,0,0,.2);
+animation:popupAnim .2s;
+}
+
+.popup-box button{
+margin-top:15px;
+}
+
+@keyframes popupAnim{
+from{transform:scale(.8);opacity:0;}
+to{transform:scale(1);opacity:1;}
+}
+
+.rak-row{
+display:flex;
+gap:10px;
+}
+
+.rak-row input{
+flex:1;
+}
+
+.rak-row button{
+width:120px;
+margin-top:10px;
+}
+
+.btnBiru{
+background:#1976d2;
+color:white;
+font-weight:bold;
+}
+
+.btnBiru:hover{
+opacity:.9;
+}
 </style>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
-
 </head>
 
 <body>
 
-<!-- isi body/index.html kamu disini -->
-
 <div class="container">
-    ...
+
+<h2>Stock Opname</h2>
+
+<div id="masterStatus">⏳ Menunggu load master...</div>
+
+<select id="tim" autocomplete="off" onchange="updatePetugas()">
+<option value="">Pilih Tim</option>
+<option>Surtok</option>
+<option>Audit</option>
+</select>
+
+<select id="petugas" autocomplete="off">
+<option value="">Pilih Petugas</option>
+</select>
+
+<div class="rak-row">
+<input id="rak" placeholder="Rak" autocomplete="off" autocapitalize="off" spellcheck="false" oninput="formatRak(this)">
+<button id="btnSelesai" class="btnBiru" type="button" onclick="selesaiRak()">Selesai</button>
+</div>
+
+<button id="btnScan" type="button" onclick="bukaScanner()">📷 Scan dengan Kamera</button>
+
+<div id="reader" style="display:none;"></div>
+
+<input id="scanInput" placeholder="Scan barcode / kode item manual"
+onkeydown="cekInput(event)" oninput="resetProduk()" onblur="cekBlur()"
+autocomplete="off" autocorrect="off" autocapitalize="off"
+spellcheck="false" inputmode="numeric" pattern="[0-9]*" disabled>
+
+<div id="produk">Belum ada produk</div>
+
+<input id="qty" type="number" placeholder="Qty" min="1" inputmode="numeric" autocomplete="off">
+
+<button class="btnBiru" type="button" onclick="simpan()">SIMPAN</button>
+
+</div>
+
+<div id="popup" class="popup">
+<div class="popup-box">
+<div id="popupText">Pesan</div>
+<button type="button" onclick="tutupPopup()">OK</button>
+</div>
 </div>
 
 <script>
-/* isi script.js disini */
-
 const API="https://script.google.com/macros/s/AKfycbz_0XEsKus5AslNzJyx8bNebdGhwWFT6hJAM6WZYQN--msdJ8NF2gWCnuzdfioS6HUq/exec";
 
 let MASTER=[];
 let produk=null;
 let scanner=null;
+const audioSukses=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+const audioError=new Audio("https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg");
+let MASTER_MAP={};
 
-/* lanjutkan semua isi script.js */
+window.onload=async()=>{ await loadMaster(); };
 
+function updatePetugas(){
+const tim=document.getElementById("tim").value;
+const petugas=document.getElementById("petugas");
+petugas.innerHTML='<option value="">Pilih Petugas</option>';
+let daftar=[];
+
+if(tim=="Surtok"){
+daftar=["Asep","Dudi","Riki","Yanto","Ridwan","Janwar","Ozi","Wildan"];
+}
+
+if(tim=="Audit"){
+daftar=["Agung","Rilo","Maul","Asep","Rahman","Wildan","Ozi","Riki"];
+}
+
+daftar.forEach(nama=>{
+petugas.innerHTML+=`<option>${nama}</option>`;
+});
+}
+
+async function loadMaster(){
+const statusDiv=document.getElementById("masterStatus");
+const scanBtn=document.getElementById("btnScan");
+const scanInput=document.getElementById("scanInput");
+
+scanBtn.disabled=true;
+scanInput.disabled=true;
+
+try{
+statusDiv.innerHTML=`🔄 Memuat master produk...<br>mohon tunggu dulu..`;
+
+const res=await fetch(API+"?action=master&t="+Date.now(),{cache:"no-store"});
+const data=await res.json();
+
+MASTER=[];
+MASTER_MAP={};
+
+(data.data||[]).forEach(item=>{
+const obj={
+kode:String(item.kode||"").trim().toUpperCase(),
+nama:String(item.nama||""),
+barcode:String(item.barcode||"").trim().toUpperCase()
+};
+MASTER.push(obj);
+MASTER_MAP[obj.kode]=obj;
+MASTER_MAP[obj.barcode]=obj;
+});
+
+scanBtn.disabled=false;
+scanInput.disabled=false;
+statusDiv.innerHTML="✅ Siap mulai hitung";
+scanInput.focus();
+
+}catch(err){
+console.log(err);
+statusDiv.innerHTML=`❌ Gagal memuat master<br>Hubungi development`;
+}
+}
+
+async function bukaScanner(){
+try{
+const reader=document.getElementById("reader");
+reader.style.display="block";
+
+if(scanner){
+await scanner.stop();
+await scanner.clear();
+scanner=null;
+reader.innerHTML="";
+reader.style.display="none";
+return;
+}
+
+scanner=new Html5Qrcode("reader");
+
+await scanner.start({facingMode:"environment"},{fps:10,qrbox:250},hasilScan);
+}catch(err){
+console.log(err);
+alert("Gagal membuka kamera");
+}
+}
+
+async function hasilScan(text){
+document.getElementById("scanInput").value=text;
+bunyiBeep();
+cariProduk(text);
+
+if(scanner){
+await scanner.stop();
+await scanner.clear();
+scanner=null;
+}
+document.getElementById("reader").style.display="none";
+}
+
+function bunyiBeep(){
+new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg").play();
+}
+
+function cekInput(e){
+if(e.key==="Enter"||e.key==="NumpadEnter"||e.key==="Tab"){
+e.preventDefault();
+setTimeout(()=>{
+const input=document.getElementById("scanInput").value.trim();
+if(!input){ return; }
+cariProduk(input);
+},100);
+}
+}
+
+function cekBlur(){
+const input=document.getElementById("scanInput").value.trim();
+if(!input){ return; }
+produk=null;
+cariProduk(input);
+}
+
+function cariProduk(input){
+input=String(input).trim().toUpperCase();
+produk=null;
+produk=MASTER_MAP[input];
+
+if(!produk){
+bunyiError();
+document.getElementById("produk").innerHTML="❌ Data tidak ditemukan";
+document.getElementById("scanInput").value="";
+setTimeout(()=>{
+document.getElementById("produk").innerHTML="Belum ada produk";
+document.getElementById("scanInput").focus();
+},3000);
+return;
+}
+
+bunyiSukses();
+
+document.getElementById("produk").innerHTML=`
+<b>${produk.nama}</b><br><br>
+Kode: ${produk.kode}<br>
+Barcode: ${produk.barcode}
+`;
+
+document.getElementById("qty").focus();
+}
+
+async function simpan(){
+const btn=document.querySelector('button.btnBiru');
+
+if(!document.getElementById("tim").value ||
+!document.getElementById("petugas").value ||
+!document.getElementById("rak").value){
+tampilPopup("⚠️ Harap pilih tim,<br><br>isi nama petugas dan rak");
+return;
+}
+
+if(!produk){
+tampilPopup("⚠️ Harap scan atau pilih produk");
+return;
+}
+
+btn.disabled=true;
+btn.style.opacity="0.5";
+btn.innerHTML="Menyimpan...";
+
+const body={
+action:"save",
+tim:document.getElementById("tim").value,
+petugas:document.getElementById("petugas").value,
+rak:document.getElementById("rak").value,
+kode:produk.kode,
+nama:produk.nama,
+barcode:produk.barcode,
+qty:document.getElementById("qty").value
+};
+
+try{
+const res=await fetch(API,{method:"POST",body:JSON.stringify(body)});
+const data=await res.json();
+
+if(!data.status){ throw new Error(); }
+
+document.getElementById("scanInput").value="";
+document.getElementById("qty").value="";
+document.getElementById("produk").innerHTML="Belum ada produk";
+produk=null;
+document.getElementById("scanInput").focus();
+
+}catch(err){
+console.log(err);
+tampilPopup("❌ Gagal menyimpan<br><br>Cek internet");
+}
+
+btn.disabled=false;
+btn.style.opacity="1";
+btn.innerHTML="SIMPAN";
+}
+
+function tampilPopup(pesan){
+document.getElementById("popupText").innerHTML=pesan;
+document.getElementById("popup").style.display="flex";
+}
+
+function tutupPopup(){
+document.getElementById("popup").style.display="none";
+}
+
+async function selesaiRak(){
+const tim=document.getElementById("tim").value;
+const petugas=document.getElementById("petugas").value;
+const rak=document.getElementById("rak").value;
+
+if(!tim||!petugas){
+tampilPopup("⚠️ Harap pilih tim dan petugas dulu");
+return;
+}
+
+if(!rak){
+tampilPopup("⚠️ Rak kosong");
+return;
+}
+
+const body={action:"selesaiRak",tim,petugas,rak};
+
+document.getElementById("rak").value="";
+document.getElementById("rak").focus();
+
+try{
+await fetch(API,{method:"POST",body:JSON.stringify(body)});
+}catch(err){
+console.log(err);
+}
+}
+
+function resetProduk(){
+produk=null;
+document.getElementById("produk").innerHTML="Belum ada produk";
+}
+
+function bunyiSukses(){
+audioSukses.currentTime=0;
+audioSukses.play();
+}
+
+function bunyiError(){
+audioError.currentTime=0;
+audioError.play();
+}
+
+function formatRak(input){
+input.value=input.value.toUpperCase().replace(/[^A-Z0-9]/g,"");
+}
 </script>
 
 </body>
