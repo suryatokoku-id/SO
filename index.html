@@ -173,7 +173,15 @@ spellcheck="false" inputmode="numeric" pattern="[0-9]*" disabled>
 
 <input id="qty" type="number" placeholder="Qty" min="1" inputmode="numeric" autocomplete="off">
 
-<button class="btnBiru" type="button" onclick="simpan()">SIMPAN</button>
+<button
+id="btnSimpan"
+class="btnBiru"
+type="button"
+onclick="simpan()">
+
+SIMPAN
+
+</button>
 
 </div>
 
@@ -340,7 +348,11 @@ document.getElementById("qty").focus();
 }
 
 async function simpan(){
-const btn=document.querySelector('button.btnBiru');
+
+const btn=
+document.getElementById(
+"btnSimpan"
+);
 
 if(!document.getElementById("tim").value ||
 !document.getElementById("petugas").value ||
