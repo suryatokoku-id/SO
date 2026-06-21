@@ -281,6 +281,16 @@ document.getElementById("tim").value;
 const petugas=
 document.getElementById("petugas");
 
+
+if(petugasSelect){
+
+petugasSelect.destroy();
+
+petugasSelect=null;
+
+}
+
+
 petugas.innerHTML=
 '<option value="">Memuat...</option>';
 
@@ -296,8 +306,10 @@ encodeURIComponent(tim)
 const data=
 await res.json();
 
+
 petugas.innerHTML=
 '<option value="">Pilih Petugas</option>';
+
 
 (data.data||[]).forEach(nama=>{
 
@@ -309,11 +321,7 @@ ${nama}
 });
 
 
-if(petugasSelect){
-
-petugasSelect.destroy();
-
-}
+petugas.value="";
 
 
 petugasSelect=
