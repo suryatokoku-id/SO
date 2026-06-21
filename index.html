@@ -139,7 +139,15 @@ margin-top:0;
 margin-bottom:20px;
 color:#1976d2;
 }
-  
+
+label{
+display:block;
+margin-top:10px;
+margin-bottom:5px;
+font-weight:bold;
+font-size:14px;
+}
+
 </style>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
@@ -159,19 +167,37 @@ src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.m
 <div class="container">
 
 <h2 id="judulApp">
-STOCK OPNAME SSURYATOKOKU
+STOCK OPNAME SURYATOKOKU
 </h2>
 
 <div id="masterStatus">⏳ Menunggu load master...</div>
 
-<select id="tim" autocomplete="off" onchange="updatePetugas()">
-<option value="">Pilih Tim</option>
+<label for="tim">Tim</label>
+
+<select
+id="tim"
+autocomplete="off"
+onchange="updatePetugas()">
+
+<option value="">
+Pilih Tim
+</option>
+
 <option>Surtok</option>
 <option>Audit</option>
+
 </select>
 
-<select id="petugas" autocomplete="off">
-<option value="">Pilih Petugas</option>
+<label for="petugas">Petugas</label>
+
+<select
+id="petugas"
+autocomplete="off">
+
+<option value="">
+Pilih Petugas
+</option>
+
 </select>
 
 <div class="rak-row">
