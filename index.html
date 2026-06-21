@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
+
+<title>SO Suryatokoku</title>
+
+<link rel="stylesheet"
+href="style.css">
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Stock Opname</h2>
+
+<div id="masterStatus">
+
+⏳ Menunggu load master...
+
+</div>
+
+
+<select
+id="tim"
+autocomplete="off"
+onchange="updatePetugas()">
+
+<option value="">
+Pilih Tim
+</option>
+
+<option>
+Surtok
+</option>
+
+<option>
+Audit
+</option>
+
+</select>
+
+
+
+<select
+id="petugas"
+autocomplete="off">
+
+<option value="">
+Pilih Petugas
+</option>
+
+</select>
+
+
+
+<div class="rak-row">
+
+<input
+id="rak"
+placeholder="Rak"
+autocomplete="off"
+autocapitalize="off"
+spellcheck="false"
+oninput="formatRak(this)">
+
+
+<button
+id="btnSelesai"
+class="btnBiru"
+type="button"
+onclick="selesaiRak()">
+
+Selesai
+
+</button>
+
+</div>
+
+
+
+<button
+id="btnScan"
+type="button"
+onclick="bukaScanner()">
+
+📷 Scan dengan Kamera
+
+</button>
+
+
+
+<div
+id="reader"
+style="display:none;">
+
+</div>
+
+
+
+<input
+id="scanInput"
+placeholder="Scan barcode / kode item manual"
+onkeydown="cekInput(event)"
+oninput="resetProduk()"
+onblur="cekBlur()"
+autocomplete="off"
+autocorrect="off"
+autocapitalize="off"
+spellcheck="false"
+inputmode="numeric"
+pattern="[0-9]*"
+disabled>
+
+
+
+<div id="produk">
+
+Belum ada produk
+
+</div>
+
+
+
+<input
+id="qty"
+type="number"
+placeholder="Qty"
+min="1"
+inputmode="numeric"
+autocomplete="off">
+
+
+
+<button
+class="btnBiru"
+type="button"
+onclick="simpan()">
+
+SIMPAN
+
+</button>
+
+</div>
+
+
+
+<div
+id="popup"
+class="popup">
+
+<div class="popup-box">
+
+<div id="popupText">
+
+Pesan
+
+</div>
+
+<button
+type="button"
+onclick="tutupPopup()">
+
+OK
+
+</button>
+
+</div>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+
+</html>
