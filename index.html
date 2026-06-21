@@ -140,14 +140,33 @@ margin-bottom:20px;
 color:#1976d2;
 }
 
-label{
-display:block;
+.ts-wrapper{
 margin-top:10px;
-margin-bottom:5px;
-font-weight:bold;
-font-size:14px;
 }
 
+.ts-wrapper .ts-control{
+
+min-height:52px;
+
+padding:14px;
+
+border-radius:10px;
+
+border:1px solid #ddd;
+
+font-size:16px;
+
+box-shadow:none;
+
+}
+
+.ts-wrapper.focus .ts-control{
+
+border-color:#1976d2 !important;
+
+box-shadow:none !important;
+
+}
 </style>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
@@ -172,8 +191,6 @@ STOCK OPNAME SURYATOKOKU
 
 <div id="masterStatus">⏳ Menunggu load master...</div>
 
-<label for="tim">Tim</label>
-
 <select
 id="tim"
 autocomplete="off"
@@ -187,8 +204,6 @@ Pilih Tim
 <option>Audit</option>
 
 </select>
-
-<label for="petugas">Petugas</label>
 
 <select
 id="petugas"
